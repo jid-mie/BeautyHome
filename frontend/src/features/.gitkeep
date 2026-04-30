@@ -1,0 +1,3 @@
+# Feature Domains
+# Create subfolders for: auth, booking, service, staff, admin
+# Each should follow: components/, hooks/, api/, types/, pages/, slice.ts

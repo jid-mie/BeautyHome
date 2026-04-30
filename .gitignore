@@ -1,0 +1,52 @@
+# Common
+node_modules/
+vendor/
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+*.log
+error_log
+
+# AI Agent & Project Docs
+.agent/
+plan_manual.md
+rule.md
+
+# Backend (Laravel)
+backend/booking_system/.env
+backend/booking_system/vendor/
+backend/booking_system/storage/*.key
+backend/booking_system/storage/logs/
+backend/booking_system/storage/framework/views/*.php
+backend/booking_system/storage/framework/sessions/
+backend/booking_system/storage/framework/cache/
+backend/booking_system/storage/framework/testing/
+backend/booking_system/public/storage
+backend/booking_system/database/database.sqlite
+backend/booking_system/.phpunit.result.cache
+backend/booking_system/public/hot
+backend/booking_system/public/storage
+
+# Frontend (Vite/React)
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+
+# IDE & OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.project
+.settings/
+.classpath

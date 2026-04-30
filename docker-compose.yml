@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - beautyhome-network
+
+  # Backend (Laravel)
+  backend:
+    build:
+      context: ./backend/booking_system
+      dockerfile: Dockerfile
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - DB_CONNECTION=mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=beautyhome
+      - DB_USERNAME=beautyuser
+      - DB_PASSWORD=beautypass
+    depends_on:
+      - db
+    networks:
+      - beautyhome-network
+
+  # Database
+  db:
+    image: mysql:8.0
+    environment:
+      - MYSQL_DATABASE=beautyhome
+      - MYSQL_USER=beautyuser
+      - MYSQL_PASSWORD=beautypass
+      - MYSQL_ROOT_PASSWORD=rootpass
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - beautyhome-network
+
+networks:
+  beautyhome-network:
+    driver: bridge
+
+volumes:
+  db_data:
