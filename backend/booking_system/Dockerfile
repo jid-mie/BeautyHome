@@ -39,4 +39,4 @@ COPY ./docker/nginx/conf.d/app.conf /etc/nginx/http.d/default.conf
 EXPOSE 80
 
 # Start nginx and php-fpm
-CMD php artisan migrate --force --seed && php-fpm -D && nginx -g "daemon off;"
+CMD php artisan migrate --force --seed || echo "Migration failed, skipping..." && php-fpm -D && nginx -g "daemon off;"
