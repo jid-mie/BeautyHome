@@ -15,7 +15,7 @@ RUN apk add --no-cache \
     nginx
 
 # Install PHP extensions
-RUN docker-php-ext-install pscntl gd bcmath zip intl pdo_mysql mbstring exif
+RUN docker-php-ext-install pcntl gd bcmath zip intl pdo_mysql mbstring exif
 
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
