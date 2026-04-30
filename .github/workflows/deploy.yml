@@ -53,4 +53,4 @@ jobs:
     # Docker Build (Verification)
     - name: Build Docker Images
       run: |
-        docker-compose build
+        docker compose build
