@@ -32,7 +32,10 @@ class StaffSeeder extends Seeder
         ];
 
         foreach ($staffs as $staff) {
-            Staff::create($staff);
+            Staff::updateOrCreate(
+                ['email' => $staff['email']],
+                $staff
+            );
         }
     }
 }
