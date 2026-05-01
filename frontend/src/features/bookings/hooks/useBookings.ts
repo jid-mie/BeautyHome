@@ -6,6 +6,7 @@ export const useBookings = (status?: string) => {
   return useQuery({
     queryKey: ['bookings', status],
     queryFn: () => bookingApi.getMyBookings(status),
+    refetchInterval: 30000, // Tự động cập nhật mỗi 30 giây
   });
 };
 

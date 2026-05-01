@@ -5,6 +5,7 @@ export const useAdminDashboard = () => {
   return useQuery({
     queryKey: ['admin-dashboard'],
     queryFn: () => adminApi.getDashboardStats(),
+    refetchInterval: 30000,
   });
 };
 
@@ -12,6 +13,7 @@ export const useAdminBookings = () => {
   return useQuery({
     queryKey: ['admin-bookings'],
     queryFn: () => adminApi.getBookings(),
+    refetchInterval: 30000,
   });
 };
 
@@ -22,6 +24,8 @@ export const useUpdateBooking = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-bookings'] });
       queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['staff-bookings'] });
     },
   });
 };
