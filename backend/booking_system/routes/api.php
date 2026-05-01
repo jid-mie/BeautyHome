@@ -56,6 +56,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('customer')->group(function () {
         Route::get('/profile', [CustomerProfile::class, 'index']);
         Route::post('/profile/update', [CustomerProfile::class, 'update']);
+        Route::post('/profile/avatar', [CustomerProfile::class, 'uploadAvatar']);
         
         Route::get('/bookings', [CustomerBooking::class, 'index']);
         Route::post('/bookings/store', [CustomerBooking::class, 'store']);
@@ -78,6 +79,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/bookings/{id}/update-status', [StaffBooking::class, 'updateStatus']);
         Route::get('/profile', [StaffProfile::class, 'index']);
         Route::post('/profile/update', [StaffProfile::class, 'update']);
+        Route::post('/profile/avatar', [StaffProfile::class, 'uploadAvatar']);
         Route::post('/logout', [StaffAuth::class, 'logout']);
     });
 

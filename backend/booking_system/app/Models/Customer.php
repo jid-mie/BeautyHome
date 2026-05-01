@@ -20,6 +20,7 @@ class Customer extends Authenticatable
         'phone',
         'password',
         'address',
+        'avatar',
         'created_at'
     ];
 

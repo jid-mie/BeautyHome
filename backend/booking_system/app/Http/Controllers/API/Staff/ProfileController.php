@@ -48,4 +48,33 @@ class ProfileController extends Controller
             'data' => $staff
         ]);
     }
+
+    public function uploadAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        $staff = $request->user();
+
+        if ($request->hasFile('avatar')) {
+            // Xóa avatar cũ nếu có
+            if ($staff->avatar && file_exists(public_path('uploads/avatars/' . $staff->avatar))) {
+                unlink(public_path('uploads/avatars/' . $staff->avatar));
+            }
+
+            $imageName = 'staff_' . $staff->staff_id . '_' . time() . '.' . $request->avatar->extension();
+            $request->avatar->move(public_path('uploads/avatars'), $imageName);
+
+            $staff->update(['avatar' => $imageName]);
+
+            return response()->json([
+                'success' => true,
+                'avatar_url' => url('uploads/avatars/' . $imageName),
+                'message' => 'Cập nhật avatar thành công.'
+            ]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Không tìm thấy file ảnh.'], 400);
+    }
 }

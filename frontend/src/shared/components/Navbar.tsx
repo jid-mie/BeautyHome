@@ -14,6 +14,15 @@ const Navbar: React.FC = () => {
     return name.charAt(0).toUpperCase() || 'U';
   };
 
+  const getAvatarUrl = () => {
+    const avatar = currentUser?.avatar;
+    if (!avatar) return null;
+    if (avatar.startsWith('http')) return avatar;
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+    const origin = baseUrl.replace('/api', '');
+    return `${origin}/uploads/avatars/${avatar}`;
+  };
+
   useEffect(() => {
     if (isAuthenticated) {
       dispatch(fetchCurrentUser());
@@ -70,8 +79,8 @@ const Navbar: React.FC = () => {
                 className="group flex items-center space-x-3"
               >
                 <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-secondary to-secondary/70 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-secondary/20 group-hover:shadow-xl group-hover:shadow-secondary/30 group-hover:scale-105 transition-all duration-300 ring-2 ring-white/80">
-                  {currentUser?.avatar ? (
-                    <img src={currentUser.avatar} alt="" className="w-full h-full rounded-full object-cover" />
+                  {getAvatarUrl() ? (
+                    <img src={getAvatarUrl()!} alt="" className="w-full h-full rounded-full object-cover" />
                   ) : (
                     getInitial()
                   )}
