@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { Calendar, Clock, MapPin, ChevronRight, Search, Tag, Loader2, Inbox, X, ShieldCheck, User } from 'lucide-react';
 import { useBookings } from '../../bookings/hooks/useBookings';
 import { Booking } from '../../bookings/types';
