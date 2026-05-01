@@ -33,7 +33,7 @@ export const bookingApi = {
     
     if (!response.data.success) return [];
 
-    let bookings = response.data.data.map(b => ({
+    const bookings = response.data.data.map(b => ({
       id: `BK${b.booking_id}`,
       serviceId: 'N/A',
       serviceTitle: b.booking_details.length > 1 
