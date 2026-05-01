@@ -1,5 +1,6 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAppSelector, useAppDispatch } from '../../../app/store';
+import { selectCurrentUser, fetchCurrentUser, logout } from '../../auth/authSlice';
 import { 
   LayoutDashboard, 
   ShoppingBag, 
@@ -7,11 +8,24 @@ import {
   Settings, 
   LogOut, 
   Layers,
-  Sparkles
+  Sparkles,
+  User
 } from 'lucide-react';
 
 const AdminSidebar: React.FC = () => {
+  const user = useAppSelector(selectCurrentUser);
   const location = useLocation();
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    dispatch(fetchCurrentUser());
+  }, [dispatch]);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/login');
+  };
   
   const menuItems = [
     { icon: LayoutDashboard, label: 'Tổng quan', path: '/admin/dashboard' },
@@ -53,8 +67,22 @@ const AdminSidebar: React.FC = () => {
         })}
       </nav>
 
+      {/* User Info */}
+      <div className="mb-6 px-6 py-4 bg-white/5 rounded-2xl border border-white/5 flex items-center space-x-3">
+        <div className="w-10 h-10 rounded-xl bg-secondary/20 flex items-center justify-center text-secondary font-bold">
+          {user?.full_name?.charAt(0) || 'A'}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-bold text-white truncate">{user?.full_name || 'Admin'}</p>
+          <p className="text-[10px] text-white/40 font-medium truncate">{user?.email}</p>
+        </div>
+      </div>
+
       {/* Logout */}
-      <button className="flex items-center space-x-4 px-6 py-4 rounded-2xl text-white/40 hover:text-rose-400 hover:bg-rose-400/5 transition-all mt-auto group">
+      <button 
+        onClick={handleLogout}
+        className="flex items-center space-x-4 px-6 py-4 rounded-2xl text-white/40 hover:text-rose-400 hover:bg-rose-400/5 transition-all mt-auto group"
+      >
         <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
         <span className="font-bold text-sm tracking-wide">Đăng xuất</span>
       </button>

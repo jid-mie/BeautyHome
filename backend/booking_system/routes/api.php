@@ -83,6 +83,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // --- ADMIN ROUTES ---
     Route::prefix('admin')->group(function () {
+        Route::get('/profile', [AdminAuth::class, 'profile']);
         Route::get('/dashboard', [AdminDashboard::class, 'index']);
         Route::get('/staff', [AdminStaff::class, 'index']);
         Route::post('/staff', [AdminStaff::class, 'store']);

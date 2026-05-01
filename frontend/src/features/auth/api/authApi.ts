@@ -24,4 +24,9 @@ export const authApi = {
   revokeSession: async (id: number): Promise<void> => {
     await apiClient.delete(`/auth/sessions/${id}`);
   },
+  
+  getAdminProfile: async (): Promise<any> => {
+    const response = await apiClient.get('/admin/profile');
+    return response.data;
+  },
 };

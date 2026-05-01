@@ -43,4 +43,14 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()->delete();
         return response()->json(['success' => true, 'message' => 'Đã đăng xuất Admin.']);
     }
+
+    public function profile(Request $request)
+    {
+        $admin = $request->user();
+        $admin->role = 'admin';
+        return response()->json([
+            'success' => true,
+            'data' => $admin
+        ]);
+    }
 }

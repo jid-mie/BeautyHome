@@ -61,6 +61,9 @@ export const fetchCurrentUser = createAsyncThunk(
           ...response,
           role: 'customer'
         };
+      } else if (role === 'admin') {
+        const response = await authApi.getAdminProfile();
+        return response.data;
       }
       
       throw new Error('Không xác định được vai trò người dùng');
