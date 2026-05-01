@@ -16,13 +16,14 @@ interface BackendBooking {
   }>;
 }
 
-const mapStatus = (status: number): BookingStatus => {
-  switch (status) {
-    case 0: return 'pending';
-    case 1: return 'confirmed';
-    case 2: return 'in_progress';
-    case 3: return 'completed';
-    case 4: return 'cancelled';
+const mapStatus = (status: any): BookingStatus => {
+  const s = status?.toString();
+  switch (s) {
+    case '0': return 'pending';
+    case '1': return 'confirmed';
+    case '2': return 'in_progress';
+    case '3': return 'completed';
+    case '4': return 'cancelled';
     default: return 'pending';
   }
 };
