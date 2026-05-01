@@ -14,5 +14,14 @@ export const staffApi = {
   getProfile: async () => {
     const response = await apiClient.get('/staff/profile');
     return response.data;
-  }
+  },
+
+  uploadAvatar: async (file: File): Promise<{ avatar_url: string }> => {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    const response = await apiClient.post('/staff/profile/avatar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
 };

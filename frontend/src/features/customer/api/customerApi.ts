@@ -7,6 +7,7 @@ interface BackendProfile {
   email: string;
   phone: string;
   address: string;
+  avatar: string | null;
   created_at: string;
 }
 
@@ -20,6 +21,7 @@ export const customerApi = {
       name: b.full_name,
       email: b.email,
       phone: b.phone || '',
+      avatar: b.avatar || undefined,
       memberSince: new Date(b.created_at).getFullYear().toString(),
       addresses: b.address ? [
         { id: '1', type: 'Mặc định', address: b.address, isDefault: true, userId: b.customer_id.toString() }
@@ -46,5 +48,14 @@ export const customerApi = {
   deleteAddress: async (id: string): Promise<void> => {
     // Currently backend doesn't have multiple addresses table, just one address field in customers
     console.warn('Backend currently supports only one primary address in profile update.');
+  },
+
+  uploadAvatar: async (file: File): Promise<{ avatar_url: string }> => {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    const response = await apiClient.post('/customer/profile/avatar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
   },
 };
