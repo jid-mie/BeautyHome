@@ -3,14 +3,16 @@ import { Calendar, Clock, MapPin, ChevronRight, Filter, Search, Tag, Loader2, In
 import { useBookings } from '../../bookings/hooks/useBookings';
 
 const statusStyles: Record<string, { label: string; color: string; bg: string }> = {
-  upcoming: { label: 'Sắp tới', color: 'text-blue-600', bg: 'bg-blue-50' },
-  completed: { label: 'Đã xong', color: 'text-green-600', bg: 'bg-green-50' },
-  cancelled: { label: 'Đã hủy', color: 'text-red-600', bg: 'bg-red-50' },
   pending: { label: 'Chờ duyệt', color: 'text-orange-600', bg: 'bg-orange-50' },
+  confirmed: { label: 'Đã xác nhận', color: 'text-blue-600', bg: 'bg-blue-50' },
+  in_progress: { label: 'Đang làm', color: 'text-indigo-600', bg: 'bg-indigo-50' },
+  completed: { label: 'Đã hoàn thành', color: 'text-green-600', bg: 'bg-green-50' },
+  cancelled: { label: 'Đã hủy', color: 'text-red-600', bg: 'bg-red-50' },
 };
 
 const MyBookingsPage: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const { data: bookings, isLoading } = useBookings(activeFilter);
 
   const filters = [
@@ -19,6 +21,11 @@ const MyBookingsPage: React.FC = () => {
     { id: 'completed', label: 'Hoàn thành' },
     { id: 'cancelled', label: 'Đã hủy' },
   ];
+
+  const filteredBookings = bookings?.filter(b => 
+    b.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    b.serviceTitle.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="space-y-10">
@@ -34,13 +41,12 @@ const MyBookingsPage: React.FC = () => {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/30" size={16} />
             <input 
               type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Tìm theo mã hoặc dịch vụ..."
               className="bg-primary/5 border-none rounded-full pl-10 pr-6 py-3 text-sm focus:ring-2 focus:ring-secondary/50 outline-none w-64"
             />
           </div>
-          <button className="p-3 bg-primary/5 text-primary/40 hover:text-primary rounded-full transition-colors">
-            <Filter size={18} />
-          </button>
         </div>
       </div>
 
@@ -68,8 +74,8 @@ const MyBookingsPage: React.FC = () => {
           <div className="absolute inset-0 flex items-center justify-center">
             <Loader2 className="animate-spin text-secondary" size={48} />
           </div>
-        ) : bookings && bookings.length > 0 ? (
-          bookings.map((booking) => (
+        ) : filteredBookings && filteredBookings.length > 0 ? (
+          filteredBookings.map((booking) => (
           <div 
             key={booking.id}
             className="group bg-white rounded-[32px] border border-primary/5 p-6 hover:shadow-xl hover:shadow-primary/5 transition-all duration-500"
@@ -83,14 +89,14 @@ const MyBookingsPage: React.FC = () => {
                 <div className="ml-6 min-w-0">
                   <div className="flex items-center space-x-3 mb-2">
                     <span className="text-[10px] font-bold text-primary/30 uppercase tracking-widest">{booking.id}</span>
-                    <span className={`text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest ${statusStyles[booking.status].bg} ${statusStyles[booking.status].color}`}>
-                      {statusStyles[booking.status].label}
+                    <span className={`text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest ${statusStyles[booking.status]?.bg || 'bg-gray-50'} ${statusStyles[booking.status]?.color || 'text-gray-400'}`}>
+                      {statusStyles[booking.status]?.label || 'Không xác định'}
                     </span>
                   </div>
                   <h3 className="text-xl font-bold text-primary truncate mb-1">{booking.serviceTitle}</h3>
                   <div className="flex items-center text-primary/40 text-sm">
                     <Tag size={12} className="mr-2" />
-                    <span>COD: {booking.price}</span>
+                    <span>Tổng tiền: {booking.price}</span>
                   </div>
                 </div>
               </div>
@@ -110,14 +116,13 @@ const MyBookingsPage: React.FC = () => {
               {/* Address */}
               <div className="lg:w-48 flex items-start text-primary/40 text-[13px] leading-relaxed">
                 <MapPin size={14} className="mr-2 mt-1 flex-shrink-0" />
-                <span className="line-clamp-2">{booking.address}</span>
+                <span className="line-clamp-2">{booking.address || 'Chưa cung cấp địa chỉ'}</span>
               </div>
 
               {/* Actions */}
               <div className="flex items-center space-x-3 lg:ml-4">
-                <button className="px-6 py-3 bg-primary/5 text-primary font-bold text-sm rounded-full hover:bg-primary/10 transition-all">Chi tiết</button>
-                <button className="p-3 bg-primary text-white rounded-full hover:shadow-lg hover:shadow-primary/20 transition-all group-hover:translate-x-1 duration-300">
-                  <ChevronRight size={18} />
+                <button className="px-6 py-3 bg-primary text-white font-bold text-sm rounded-full hover:shadow-lg hover:shadow-primary/20 transition-all group-hover:translate-x-1 duration-300 flex items-center">
+                  Chi tiết <ChevronRight size={16} className="ml-2" />
                 </button>
               </div>
             </div>
@@ -126,7 +131,7 @@ const MyBookingsPage: React.FC = () => {
         ) : (
           <div className="flex flex-col items-center justify-center pt-20 text-primary/20">
             <Inbox size={64} strokeWidth={1} />
-            <p className="mt-4 font-bold tracking-widest uppercase text-xs">Không có lịch hẹn nào</p>
+            <p className="mt-4 font-bold tracking-widest uppercase text-xs">Không tìm thấy lịch hẹn nào</p>
           </div>
         )}
       </div>

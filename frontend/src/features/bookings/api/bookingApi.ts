@@ -19,8 +19,8 @@ interface BackendBooking {
 const mapStatus = (status: number): BookingStatus => {
   switch (status) {
     case 0: return 'pending';
-    case 1:
-    case 2: return 'upcoming';
+    case 1: return 'confirmed';
+    case 2: return 'in_progress';
     case 3: return 'completed';
     case 4: return 'cancelled';
     default: return 'pending';
@@ -33,10 +33,12 @@ export const bookingApi = {
     
     if (!response.data.success) return [];
 
-    return response.data.data.map(b => ({
+    let bookings = response.data.data.map(b => ({
       id: `BK${b.booking_id}`,
-      serviceId: 'N/A', // Details contain multiple services
-      serviceTitle: b.booking_details[0]?.service.service_name || 'Nhiều dịch vụ',
+      serviceId: 'N/A',
+      serviceTitle: b.booking_details.length > 1 
+        ? `${b.booking_details[0].service.service_name} (+${b.booking_details.length - 1} khác)`
+        : b.booking_details[0]?.service.service_name || 'Dịch vụ lẻ',
       date: b.booking_date,
       time: b.booking_time,
       address: b.address,
@@ -45,6 +47,16 @@ export const bookingApi = {
       image: b.booking_details[0]?.service.image || '/images/home/service-facial.png',
       userId: 'N/A'
     }));
+
+    // Lọc dữ liệu phía Frontend nếu cần (hoặc truyền query vào API nếu backend hỗ trợ)
+    if (status && status !== 'all') {
+      if (status === 'upcoming') {
+        return bookings.filter(b => b.status === 'pending' || b.status === 'confirmed' || b.status === 'in_progress');
+      }
+      return bookings.filter(b => b.status === status);
+    }
+
+    return bookings;
   },
 
   createBooking: async (data: CreateBookingRequest): Promise<any> => {
