@@ -25,7 +25,7 @@ const AdminSidebar: React.FC = () => {
 
   const handleLogout = () => {
     dispatch(logout());
-    navigate('/login');
+    navigate('/admin/login');
   };
   
   const menuItems = [

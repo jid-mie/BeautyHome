@@ -17,12 +17,71 @@ import {
   AreaChart,
   Area
 } from 'recharts';
-import { useAdminDashboard } from '../../features/admin/hooks/useAdmin';
+import { useAdminDashboard, useAdminServices, useCreateBooking } from '../../features/admin/hooks/useAdmin';
 import Skeleton from '../../shared/components/ui/Skeleton';
+import { X, Calendar as CalendarIcon, Clock as ClockIcon, User as UserIcon, Phone, FileText } from 'lucide-react';
 
 const AdminDashboardPage: React.FC = () => {
   const { data: response, isLoading } = useAdminDashboard();
+  const { data: servicesResponse } = useAdminServices();
+  const createBooking = useCreateBooking();
+  
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [formData, setFormData] = React.useState({
+    customer_name: '',
+    customer_phone: '',
+    service_id: '',
+    booking_date: '',
+    booking_time: '',
+  });
+
   const dashboardData = response?.data;
+  const services = servicesResponse?.data || [];
+
+  const handleExport = () => {
+    if (!dashboardData) return;
+    
+    const headers = ['Metric', 'Value'];
+    const rows = [
+      ['Total Revenue', dashboardData.stats?.revenue || 0],
+      ['Total Bookings', dashboardData.stats?.bookings || 0],
+      ['Total Customers', dashboardData.stats?.customers || 0],
+      ['Total Staff', dashboardData.stats?.staff || 0],
+    ];
+    
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `beauty_home_report_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleCreateBooking = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await createBooking.mutateAsync(formData);
+      setIsModalOpen(false);
+      setFormData({
+        customer_name: '',
+        customer_phone: '',
+        service_id: '',
+        booking_date: '',
+        booking_time: '',
+      });
+      alert('Tạo lịch hẹn thành công!');
+    } catch (error) {
+      alert('Có lỗi xảy ra khi tạo lịch hẹn.');
+    }
+  };
 
   const stats = [
     { 
@@ -71,10 +130,128 @@ const AdminDashboardPage: React.FC = () => {
           <p className="text-slate-500 font-medium mt-1">Dữ liệu phân tích thực tế từ hệ thống.</p>
         </div>
         <div className="flex items-center space-x-3">
-          <button className="px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">Xuất báo cáo</button>
-          <button className="px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-bold hover:shadow-lg hover:shadow-primary/20 transition-all">Tạo lịch hẹn</button>
+          <button 
+            onClick={handleExport}
+            className="px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all flex items-center"
+          >
+            <FileText size={16} className="mr-2" />
+            Xuất báo cáo
+          </button>
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-bold hover:shadow-lg hover:shadow-primary/20 transition-all flex items-center"
+          >
+            <CalendarIcon size={16} className="mr-2" />
+            Tạo lịch hẹn
+          </button>
         </div>
       </div>
+
+      {/* Create Booking Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-primary/40 backdrop-blur-md" onClick={() => setIsModalOpen(false)}></div>
+          <div className="bg-white rounded-[40px] shadow-2xl w-full max-w-lg relative z-10 overflow-hidden animate-in fade-in zoom-in duration-300">
+            <div className="p-8 border-b border-slate-50 flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900">Tạo lịch hẹn mới</h2>
+                <p className="text-slate-400 text-sm font-medium">Nhập thông tin chi tiết lịch hẹn</p>
+              </div>
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="p-2 bg-slate-50 text-slate-400 rounded-full hover:bg-slate-100 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleCreateBooking} className="p-8 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Tên khách hàng</label>
+                  <div className="relative">
+                    <UserIcon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                    <input 
+                      required
+                      type="text" 
+                      placeholder="Nguyễn Văn A"
+                      className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none"
+                      value={formData.customer_name}
+                      onChange={(e) => setFormData({...formData, customer_name: e.target.value})}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Số điện thoại</label>
+                  <div className="relative">
+                    <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                    <input 
+                      required
+                      type="tel" 
+                      placeholder="0987xxxxxx"
+                      className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none"
+                      value={formData.customer_phone}
+                      onChange={(e) => setFormData({...formData, customer_phone: e.target.value})}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Dịch vụ</label>
+                <select 
+                  required
+                  className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none appearance-none cursor-pointer"
+                  value={formData.service_id}
+                  onChange={(e) => setFormData({...formData, service_id: e.target.value})}
+                >
+                  <option value="">Chọn dịch vụ...</option>
+                  {services.map((s: any) => (
+                    <option key={s.id} value={s.id}>{s.service_name} - {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(s.price)}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Ngày hẹn</label>
+                  <div className="relative">
+                    <CalendarIcon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                    <input 
+                      required
+                      type="date" 
+                      className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none"
+                      value={formData.booking_date}
+                      onChange={(e) => setFormData({...formData, booking_date: e.target.value})}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Giờ hẹn</label>
+                  <div className="relative">
+                    <ClockIcon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                    <input 
+                      required
+                      type="time" 
+                      className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none"
+                      value={formData.booking_time}
+                      onChange={(e) => setFormData({...formData, booking_time: e.target.value})}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                type="submit"
+                disabled={createBooking.isPending}
+                className="w-full py-5 bg-primary text-white rounded-2xl font-bold text-sm hover:shadow-2xl hover:shadow-primary/40 transition-all flex items-center justify-center disabled:opacity-50"
+              >
+                {createBooking.isPending ? 'Đang xử lý...' : 'Xác nhận đặt lịch'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

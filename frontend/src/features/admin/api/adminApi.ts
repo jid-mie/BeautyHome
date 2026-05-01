@@ -16,6 +16,11 @@ export const adminApi = {
     return response.data;
   },
 
+  createBooking: async (data: any) => {
+    const response = await apiClient.post('/admin/bookings', data);
+    return response.data;
+  },
+
   getStaff: async () => {
     const response = await apiClient.get('/admin/staff');
     return response.data;

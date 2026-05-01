@@ -26,6 +26,17 @@ export const useUpdateBooking = () => {
   });
 };
 
+export const useCreateBooking = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => adminApi.createBooking(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
+    },
+  });
+};
+
 export const useAdminStaff = () => {
   return useQuery({
     queryKey: ['admin-staff'],
