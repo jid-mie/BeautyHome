@@ -1,15 +1,41 @@
-import React, { useState, useEffect } from 'react';
-import { Mail, Phone, User, MapPin, Briefcase, Check, Edit2, Loader2, Lock } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Mail, Phone, User, MapPin, Briefcase, Check, Edit2, Loader2, Lock, Camera } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../../app/store';
 import { selectCurrentUser, fetchCurrentUser } from '../../features/auth/authSlice';
+import { staffApi } from '../../features/staff/api/staffApi';
 
 import { Link } from 'react-router-dom';
 import SessionManager from '../../features/auth/components/SessionManager';
 
 const StaffProfilePage: React.FC = () => {
+  const dispatch = useAppDispatch();
   const user = useAppSelector(selectCurrentUser);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Ảnh không được vượt quá 2MB');
+      return;
+    }
+
+    setAvatarPreview(URL.createObjectURL(file));
+    setIsUploadingAvatar(true);
+    try {
+      await staffApi.uploadAvatar(file);
+      dispatch(fetchCurrentUser());
+    } catch (err) {
+      console.error('Upload failed:', err);
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
 
   if (!user) {
     return (
@@ -28,6 +54,9 @@ const StaffProfilePage: React.FC = () => {
       </div>
     );
   }
+
+  const avatarSrc = avatarPreview || user.avatar;
+  const initial = (user.full_name || user.name || 'S').charAt(0).toUpperCase();
 
   return (
     <div className="space-y-12">
@@ -57,13 +86,34 @@ const StaffProfilePage: React.FC = () => {
         {/* Profile Card */}
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-white rounded-[40px] p-8 shadow-sm border border-slate-100 flex flex-col items-center text-center">
-            <div className="w-32 h-32 rounded-[40px] bg-slate-50 flex items-center justify-center text-slate-200 mb-6 relative group overflow-hidden border-2 border-dashed border-slate-200">
-               <User size={64} />
-               {isEditing && (
-                 <div className="absolute inset-0 bg-slate-900/40 flex items-center justify-center text-white cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Edit2 size={24} />
-                 </div>
-               )}
+            <div 
+              className="relative w-32 h-32 rounded-[40px] overflow-hidden mb-6 cursor-pointer group"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {avatarSrc ? (
+                <img src={avatarSrc} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-4xl font-bold">
+                  {initial}
+                </div>
+              )}
+              <div className="absolute inset-0 bg-slate-900/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                {isUploadingAvatar ? (
+                  <Loader2 size={28} className="text-white animate-spin" />
+                ) : (
+                  <>
+                    <Camera size={24} className="text-white mb-1" />
+                    <span className="text-[9px] text-white font-bold uppercase tracking-widest">Đổi ảnh</span>
+                  </>
+                )}
+              </div>
+              <input 
+                ref={fileInputRef}
+                type="file" 
+                accept="image/jpeg,image/png,image/webp" 
+                className="hidden" 
+                onChange={handleAvatarChange}
+              />
             </div>
             <h3 className="text-2xl font-bold text-slate-900">{user.full_name || user.name}</h3>
             <p className="text-emerald-500 font-bold text-sm uppercase tracking-widest mt-2">Kỹ thuật viên</p>

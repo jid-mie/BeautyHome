@@ -1,12 +1,28 @@
-import React, { useState } from 'react';
-import { Mail, Phone, User, MapPin, Plus, Trash2, Edit2, Check, Loader2 } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Mail, Phone, User, MapPin, Plus, Trash2, Edit2, Check, Loader2, Camera } from 'lucide-react';
 import { useProfile } from '../hooks/useProfile';
 import { useAppDispatch } from '../../../app/store';
 import { fetchCurrentUser } from '../../auth/authSlice';
 
 const ProfilePage: React.FC = () => {
-  const { profile, isLoading, isUpdating } = useProfile();
+  const { profile, isLoading, isUpdating, uploadAvatar, isUploadingAvatar } = useProfile();
   const [isEditing, setIsEditing] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Ảnh không được vượt quá 2MB');
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    setAvatarPreview(previewUrl);
+    uploadAvatar(file);
+  };
 
   if (isLoading) {
     return (
@@ -15,6 +31,9 @@ const ProfilePage: React.FC = () => {
       </div>
     );
   }
+
+  const avatarSrc = avatarPreview || profile?.avatar;
+  const initial = (profile?.name || 'K').charAt(0).toUpperCase();
 
   return (
     <div className="space-y-12">
@@ -44,11 +63,34 @@ const ProfilePage: React.FC = () => {
         {/* Basic Info */}
         <div className="space-y-8">
           <div className="flex items-center space-x-6">
-            <div className="w-24 h-24 rounded-[32px] bg-primary/5 border border-primary/5 flex items-center justify-center text-primary/20 relative group overflow-hidden">
-               <User size={48} />
-               <div className="absolute inset-0 bg-primary/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white cursor-pointer">
-                  <Edit2 size={24} />
-               </div>
+            <div 
+              className="relative w-24 h-24 rounded-[32px] overflow-hidden flex-shrink-0 cursor-pointer group"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {avatarSrc ? (
+                <img src={avatarSrc} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-secondary to-secondary/60 flex items-center justify-center text-white text-3xl font-bold">
+                  {initial}
+                </div>
+              )}
+              <div className="absolute inset-0 bg-primary/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                {isUploadingAvatar ? (
+                  <Loader2 size={24} className="text-white animate-spin" />
+                ) : (
+                  <>
+                    <Camera size={20} className="text-white mb-1" />
+                    <span className="text-[9px] text-white font-bold uppercase tracking-widest">Đổi ảnh</span>
+                  </>
+                )}
+              </div>
+              <input 
+                ref={fileInputRef}
+                type="file" 
+                accept="image/jpeg,image/png,image/webp" 
+                className="hidden" 
+                onChange={handleAvatarChange}
+              />
             </div>
             <div>
               <h3 className="text-xl font-bold text-primary">{profile?.name || 'Khách hàng'}</h3>
