@@ -13,7 +13,39 @@ apiClient.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  
+  // Đảm bảo dùng HTTPS trong production
+  if (import.meta.env.PROD && config.url?.startsWith('http://')) {
+    config.url = config.url.replace('http://', 'https://');
+  }
+  
   return config;
 });
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Xác định role để điều hướng về trang login đúng
+      const path = window.location.pathname;
+      let loginPath = '/login';
+      
+      if (path.startsWith('/admin')) {
+        loginPath = '/admin/login';
+      } else if (path.startsWith('/staff')) {
+        loginPath = '/staff/login';
+      }
+      
+      // Xóa dữ liệu phiên làm việc
+      storage.clearAll();
+      
+      // Chuyển hướng về trang đăng nhập
+      if (!window.location.pathname.includes('login')) {
+        window.location.href = loginPath;
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default apiClient;
