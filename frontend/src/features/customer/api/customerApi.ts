@@ -11,6 +11,14 @@ interface BackendProfile {
   created_at: string;
 }
 
+const getAvatarUrl = (avatar: string | null): string | undefined => {
+  if (!avatar) return undefined;
+  if (avatar.startsWith('http')) return avatar;
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+  const origin = baseUrl.replace('/api', '');
+  return `${origin}/uploads/avatars/${avatar}`;
+};
+
 export const customerApi = {
   getProfile: async (): Promise<CustomerProfile> => {
     const response = await apiClient.get<{ success: boolean; data: BackendProfile }>('/customer/profile');
@@ -21,7 +29,7 @@ export const customerApi = {
       name: b.full_name,
       email: b.email,
       phone: b.phone || '',
-      avatar: b.avatar || undefined,
+      avatar: getAvatarUrl(b.avatar),
       memberSince: new Date(b.created_at).getFullYear().toString(),
       addresses: b.address ? [
         { id: '1', type: 'Mặc định', address: b.address, isDefault: true, userId: b.customer_id.toString() }

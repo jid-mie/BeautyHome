@@ -41,4 +41,33 @@ class ProfileController extends Controller
             'message' => 'Cập nhật thông tin thành công.'
         ]);
     }
+
+    public function uploadAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        $customer = $request->user();
+
+        if ($request->hasFile('avatar')) {
+            // Xóa avatar cũ nếu có
+            if ($customer->avatar && file_exists(public_path('uploads/avatars/' . $customer->avatar))) {
+                unlink(public_path('uploads/avatars/' . $customer->avatar));
+            }
+
+            $imageName = 'customer_' . $customer->customer_id . '_' . time() . '.' . $request->avatar->extension();
+            $request->avatar->move(public_path('uploads/avatars'), $imageName);
+
+            $customer->update(['avatar' => $imageName]);
+
+            return response()->json([
+                'success' => true,
+                'avatar_url' => url('uploads/avatars/' . $imageName),
+                'message' => 'Cập nhật avatar thành công.'
+            ]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Không tìm thấy file ảnh.'], 400);
+    }
 }
