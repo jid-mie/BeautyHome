@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Calendar, Clock, MapPin, ChevronRight, Filter, Search, Tag, Loader2, Inbox } from 'lucide-react';
+import { Calendar, Clock, MapPin, ChevronRight, Search, Tag, Loader2, Inbox, X, ShieldCheck, User } from 'lucide-react';
 import { useBookings } from '../../bookings/hooks/useBookings';
+import { Booking } from '../../bookings/types';
 
 const statusStyles: Record<string, { label: string; color: string; bg: string }> = {
   pending: { label: 'Chờ duyệt', color: 'text-orange-600', bg: 'bg-orange-50' },
@@ -13,6 +13,7 @@ const statusStyles: Record<string, { label: string; color: string; bg: string }>
 const MyBookingsPage: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const { data: bookings, isLoading } = useBookings(activeFilter);
 
   const filters = [
@@ -121,7 +122,10 @@ const MyBookingsPage: React.FC = () => {
 
               {/* Actions */}
               <div className="flex items-center space-x-3 lg:ml-4">
-                <button className="px-6 py-3 bg-primary text-white font-bold text-sm rounded-full hover:shadow-lg hover:shadow-primary/20 transition-all group-hover:translate-x-1 duration-300 flex items-center">
+                <button 
+                  onClick={() => setSelectedBooking(booking)}
+                  className="px-6 py-3 bg-primary text-white font-bold text-sm rounded-full hover:shadow-lg hover:shadow-primary/20 transition-all group-hover:translate-x-1 duration-300 flex items-center"
+                >
                   Chi tiết <ChevronRight size={16} className="ml-2" />
                 </button>
               </div>
@@ -135,6 +139,77 @@ const MyBookingsPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Booking Detail Modal */}
+      {selectedBooking && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-primary/40 backdrop-blur-md" onClick={() => setSelectedBooking(null)} />
+          <div className="bg-white w-full max-w-xl rounded-[40px] shadow-2xl relative z-10 overflow-hidden animate-in fade-in zoom-in duration-300">
+            {/* Modal Header */}
+            <div className="relative h-48">
+              <img src={selectedBooking.image} alt="" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              <button 
+                onClick={() => setSelectedBooking(null)}
+                className="absolute top-6 right-6 p-3 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full text-white transition-all"
+              >
+                <X size={20} />
+              </button>
+              <div className="absolute bottom-6 left-8">
+                <span className="text-[10px] font-bold text-white/60 uppercase tracking-[0.2em]">{selectedBooking.id}</span>
+                <h2 className="text-2xl font-bold text-white mt-1">{selectedBooking.serviceTitle}</h2>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-8 space-y-8">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <span className="text-[10px] font-bold text-primary/30 uppercase tracking-widest">Thời gian</span>
+                  <div className="flex items-center font-bold text-primary">
+                    <Calendar size={16} className="mr-2 text-secondary" />
+                    {selectedBooking.date}
+                  </div>
+                  <div className="flex items-center font-bold text-primary">
+                    <Clock size={16} className="mr-2 text-secondary" />
+                    {selectedBooking.time}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <span className="text-[10px] font-bold text-primary/30 uppercase tracking-widest">Trạng thái</span>
+                  <div className={`inline-flex items-center px-4 py-2 rounded-full text-xs font-bold ${statusStyles[selectedBooking.status]?.bg} ${statusStyles[selectedBooking.status]?.color}`}>
+                    <ShieldCheck size={14} className="mr-2" />
+                    {statusStyles[selectedBooking.status]?.label}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <span className="text-[10px] font-bold text-primary/30 uppercase tracking-widest">Địa điểm thực hiện</span>
+                <div className="flex items-start p-4 bg-primary/5 rounded-2xl">
+                  <MapPin size={18} className="mr-3 text-secondary mt-1 flex-shrink-0" />
+                  <p className="text-sm font-medium text-primary leading-relaxed">
+                    {selectedBooking.address || 'Chưa cung cấp địa chỉ chi tiết.'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-primary/5 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-bold text-primary/30 uppercase tracking-widest block mb-1">Tổng thanh toán</span>
+                  <span className="text-2xl font-bold text-secondary">{selectedBooking.price}</span>
+                </div>
+                <button 
+                  onClick={() => setSelectedBooking(null)}
+                  className="px-8 py-4 bg-primary text-white font-bold rounded-full hover:shadow-xl hover:shadow-primary/20 transition-all active:scale-95"
+                >
+                  Đóng cửa sổ
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
