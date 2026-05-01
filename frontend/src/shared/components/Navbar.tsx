@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../app/store';
-import { selectIsAuthenticated, fetchCurrentUser } from '../../features/auth/authSlice';
+import { selectIsAuthenticated, selectCurrentUser, fetchCurrentUser } from '../../features/auth/authSlice';
 
 const Navbar: React.FC = () => {
   const dispatch = useAppDispatch();
   const [isScrolled, setIsScrolled] = useState(false);
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const currentUser = useAppSelector(selectCurrentUser);
+
+  const getInitial = () => {
+    const name = currentUser?.full_name || currentUser?.name || currentUser?.email || '';
+    return name.charAt(0).toUpperCase() || 'U';
+  };
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -61,9 +67,19 @@ const Navbar: React.FC = () => {
             {isAuthenticated ? (
               <Link 
                 to="/account/profile" 
-                className="btn-primary px-8 py-2.5 rounded-full text-[12px] font-bold tracking-widest uppercase hover:shadow-xl hover:shadow-primary/20 transition-all"
+                className="group flex items-center space-x-3"
               >
-                Tài khoản
+                <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-secondary to-secondary/70 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-secondary/20 group-hover:shadow-xl group-hover:shadow-secondary/30 group-hover:scale-105 transition-all duration-300 ring-2 ring-white/80">
+                  {currentUser?.avatar ? (
+                    <img src={currentUser.avatar} alt="" className="w-full h-full rounded-full object-cover" />
+                  ) : (
+                    getInitial()
+                  )}
+                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-white" />
+                </div>
+                <span className="text-[12px] font-bold text-primary/60 group-hover:text-primary transition-colors tracking-wide max-w-[100px] truncate">
+                  {currentUser?.full_name || currentUser?.name || 'Tài khoản'}
+                </span>
               </Link>
             ) : (
               <div className="flex items-center space-x-8">
