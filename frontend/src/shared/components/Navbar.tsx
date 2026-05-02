@@ -6,6 +6,7 @@ import { selectIsAuthenticated, selectCurrentUser, fetchCurrentUser } from '../.
 const Navbar: React.FC = () => {
   const dispatch = useAppDispatch();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const currentUser = useAppSelector(selectCurrentUser);
 
@@ -79,8 +80,8 @@ const Navbar: React.FC = () => {
                 className="group flex items-center space-x-3"
               >
                 <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-secondary to-secondary/70 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-secondary/20 group-hover:shadow-xl group-hover:shadow-secondary/30 group-hover:scale-105 transition-all duration-300 ring-2 ring-white/80">
-                  {getAvatarUrl() ? (
-                    <img src={getAvatarUrl()!} alt="" className="w-full h-full rounded-full object-cover" />
+                  {getAvatarUrl() && !avatarError ? (
+                    <img src={getAvatarUrl()!} alt="" className="w-full h-full rounded-full object-cover" onError={() => setAvatarError(true)} />
                   ) : (
                     getInitial()
                   )}

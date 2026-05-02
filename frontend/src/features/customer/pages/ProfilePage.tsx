@@ -8,6 +8,7 @@ const ProfilePage: React.FC = () => {
   const { profile, isLoading, isUpdating, uploadAvatar, isUploadingAvatar } = useProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarError, setAvatarError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,6 +22,7 @@ const ProfilePage: React.FC = () => {
 
     const previewUrl = URL.createObjectURL(file);
     setAvatarPreview(previewUrl);
+    setAvatarError(false);
     uploadAvatar(file);
   };
 
@@ -67,8 +69,8 @@ const ProfilePage: React.FC = () => {
               className="relative w-24 h-24 rounded-[32px] overflow-hidden flex-shrink-0 cursor-pointer group"
               onClick={() => fileInputRef.current?.click()}
             >
-              {avatarSrc ? (
-                <img src={avatarSrc} alt="Avatar" className="w-full h-full object-cover" />
+              {avatarSrc && !avatarError ? (
+                <img src={avatarSrc} alt="Avatar" className="w-full h-full object-cover" onError={() => setAvatarError(true)} />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-secondary to-secondary/60 flex items-center justify-center text-white text-3xl font-bold">
                   {initial}
