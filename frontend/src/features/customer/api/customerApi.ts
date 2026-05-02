@@ -62,7 +62,7 @@ export const customerApi = {
     const formData = new FormData();
     formData.append('avatar', file);
     const response = await apiClient.post('/customer/profile/avatar', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: { 'Content-Type': undefined as any },
     });
     return response.data;
   },
