@@ -13,9 +13,17 @@ class ProfileController extends Controller
      */
     public function index(Request $request)
     {
+        $user = $request->user();
+        $data = $user->toArray();
+        
+        // Trả về full URL cho avatar
+        if ($user->avatar) {
+            $data['avatar'] = url('uploads/avatars/' . $user->avatar);
+        }
+
         return response()->json([
             'success' => true,
-            'data' => $request->user()
+            'data' => $data
         ]);
     }
 
