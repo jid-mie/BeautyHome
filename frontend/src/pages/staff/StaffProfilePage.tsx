@@ -30,7 +30,9 @@ const StaffProfilePage: React.FC = () => {
     try {
       await staffApi.uploadAvatar(file);
       dispatch(fetchCurrentUser());
-    } catch (err) {
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || 'Upload avatar thất bại. Vui lòng thử lại.';
+      alert(msg);
       console.error('Upload failed:', err);
     } finally {
       setIsUploadingAvatar(false);

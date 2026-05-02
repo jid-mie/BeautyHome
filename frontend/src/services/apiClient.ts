@@ -14,6 +14,11 @@ apiClient.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
   
+  // Khi gửi FormData (upload file), xóa Content-Type để browser tự set boundary
+  if (config.data instanceof FormData) {
+    delete config.headers['Content-Type'];
+  }
+
   // Đảm bảo dùng HTTPS trong production
   if (import.meta.env.PROD && config.url?.startsWith('http://')) {
     config.url = config.url.replace('http://', 'https://');

@@ -26,6 +26,11 @@ export const useProfile = () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       dispatch(fetchCurrentUser());
     },
+    onError: (error: any) => {
+      const msg = error?.response?.data?.message || 'Upload avatar thất bại. Vui lòng thử lại.';
+      alert(msg);
+      console.error('Avatar upload error:', error);
+    },
   });
 
   return {

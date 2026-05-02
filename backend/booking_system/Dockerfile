@@ -33,6 +33,11 @@ RUN composer install --no-interaction --optimize-autoloader --no-dev
 RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache && \
     chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
+# Create upload directories
+RUN mkdir -p /var/www/public/uploads/avatars /var/www/public/uploads/services && \
+    chown -R www-data:www-data /var/www/public/uploads && \
+    chmod -R 775 /var/www/public/uploads
+
 # Copy nginx config
 COPY ./docker/nginx/conf.d/app.conf /etc/nginx/http.d/default.conf
 
@@ -40,4 +45,4 @@ COPY ./docker/nginx/conf.d/app.conf /etc/nginx/http.d/default.conf
 EXPOSE 80
 
 # Start nginx and php-fpm
-CMD php artisan migrate --force --seed || echo "Migration failed, skipping..." && php-fpm -D && nginx -g "daemon off;"
+CMD sh -c "php artisan migrate --force 2>/dev/null; php-fpm -D && nginx -g 'daemon off;'"
