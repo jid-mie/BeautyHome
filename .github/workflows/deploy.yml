@@ -30,6 +30,7 @@ jobs:
         cd backend/booking_system
         cp .env.example .env
         php artisan key:generate
+        mkdir -p public/uploads/avatars public/uploads/services
         # php artisan test # Uncomment if you have tests
 
     # Setup Node for Frontend Testing

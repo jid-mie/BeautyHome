@@ -50,6 +50,9 @@ jobs:
       - name: Directory Permissions
         run: chmod -R 777 storage bootstrap/cache
 
+      - name: Create Upload Directories
+        run: mkdir -p public/uploads/avatars public/uploads/services
+
       - name: Run Migrations
         run: php artisan migrate --force
         env:
