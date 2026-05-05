@@ -7,8 +7,14 @@ const RouteFallback = () => (
   </div>
 );
 
-export const lazyRoute = (Component: LazyExoticComponent<ComponentType>) => (
-  <Suspense fallback={<RouteFallback />}>
-    <Component />
-  </Suspense>
-);
+interface LazyRouteProps {
+  component: LazyExoticComponent<ComponentType>;
+}
+
+export function LazyRoute({ component: Component }: LazyRouteProps) {
+  return (
+    <Suspense fallback={<RouteFallback />}>
+      <Component />
+    </Suspense>
+  );
+}

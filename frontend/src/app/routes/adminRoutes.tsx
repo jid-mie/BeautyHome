@@ -1,7 +1,7 @@
 import { lazy } from 'react';
 import { RouteObject, Navigate } from 'react-router-dom';
 import ProtectedRoute from '../../shared/components/guards/ProtectedRoute';
-import { lazyRoute } from '../../shared/components/LazyRoute';
+import { LazyRoute } from '../../shared/components/LazyRoute';
 
 const AdminLayout = lazy(() => import('../../layouts/AdminLayout'));
 const AdminDashboardPage = lazy(() => import('../../pages/admin/AdminDashboardPage'));
@@ -18,21 +18,21 @@ export const adminRoutes: RouteObject = {
   children: [
     {
       path: 'login',
-      element: lazyRoute(AdminLoginPage),
+      element: <LazyRoute component={AdminLoginPage} />,
     },
     {
       element: <ProtectedRoute allowedRoles={['admin']} />,
       children: [
         {
-          element: lazyRoute(AdminLayout),
+          element: <LazyRoute component={AdminLayout} />,
           children: [
-            { path: 'dashboard', element: lazyRoute(AdminDashboardPage) },
-            { path: 'services', element: lazyRoute(AdminServicePage) },
-            { path: 'bookings', element: lazyRoute(AdminBookingPage) },
-            { path: 'staff', element: lazyRoute(AdminStaffPage) },
-            { path: 'categories', element: lazyRoute(AdminCategoryPage) },
-            { path: 'customers', element: lazyRoute(AdminCustomerPage) },
-            { path: 'payments', element: lazyRoute(AdminPaymentPage) },
+            { path: 'dashboard', element: <LazyRoute component={AdminDashboardPage} /> },
+            { path: 'services', element: <LazyRoute component={AdminServicePage} /> },
+            { path: 'bookings', element: <LazyRoute component={AdminBookingPage} /> },
+            { path: 'staff', element: <LazyRoute component={AdminStaffPage} /> },
+            { path: 'categories', element: <LazyRoute component={AdminCategoryPage} /> },
+            { path: 'customers', element: <LazyRoute component={AdminCustomerPage} /> },
+            { path: 'payments', element: <LazyRoute component={AdminPaymentPage} /> },
             { index: true, element: <Navigate to="/admin/dashboard" replace /> },
           ],
         },

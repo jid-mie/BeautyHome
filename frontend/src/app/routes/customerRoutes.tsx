@@ -1,7 +1,7 @@
 import { lazy } from 'react';
 import { RouteObject } from 'react-router-dom';
 import ProtectedRoute from '../../shared/components/guards/ProtectedRoute';
-import { lazyRoute } from '../../shared/components/LazyRoute';
+import { LazyRoute } from '../../shared/components/LazyRoute';
 
 const MainLayout = lazy(() => import('../../layouts/MainLayout'));
 const HomePage = lazy(() => import('../../pages/customer/HomePage'));
@@ -15,23 +15,23 @@ const SecurityPage = lazy(() => import('../../features/customer/pages/SecurityPa
 
 export const customerRoutes: RouteObject = {
   path: '/',
-  element: lazyRoute(MainLayout),
+  element: <LazyRoute component={MainLayout} />,
   children: [
-    { index: true, element: lazyRoute(HomePage) },
-    { path: 'services', element: lazyRoute(ServicesPage) },
-    { path: 'services/:id', element: lazyRoute(ServiceDetailPage) },
+    { index: true, element: <LazyRoute component={HomePage} /> },
+    { path: 'services', element: <LazyRoute component={ServicesPage} /> },
+    { path: 'services/:id', element: <LazyRoute component={ServiceDetailPage} /> },
     {
       element: <ProtectedRoute allowedRoles={['customer']} />,
       children: [
         {
           path: 'account',
-          element: lazyRoute(AccountLayout),
+          element: <LazyRoute component={AccountLayout} />,
           children: [
-            { path: 'profile', element: lazyRoute(ProfilePage) },
-            { path: 'bookings', element: lazyRoute(MyBookingsPage) },
-            { path: 'notifications', element: lazyRoute(NotificationsPage) },
-            { path: 'security', element: lazyRoute(SecurityPage) },
-            { index: true, element: lazyRoute(ProfilePage) },
+            { path: 'profile', element: <LazyRoute component={ProfilePage} /> },
+            { path: 'bookings', element: <LazyRoute component={MyBookingsPage} /> },
+            { path: 'notifications', element: <LazyRoute component={NotificationsPage} /> },
+            { path: 'security', element: <LazyRoute component={SecurityPage} /> },
+            { index: true, element: <LazyRoute component={ProfilePage} /> },
           ],
         },
       ],

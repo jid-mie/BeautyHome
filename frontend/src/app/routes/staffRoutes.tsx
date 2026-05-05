@@ -1,7 +1,7 @@
 import { lazy } from 'react';
 import { RouteObject, Navigate } from 'react-router-dom';
 import ProtectedRoute from '../../shared/components/guards/ProtectedRoute';
-import { lazyRoute } from '../../shared/components/LazyRoute';
+import { LazyRoute } from '../../shared/components/LazyRoute';
 
 const StaffLayout = lazy(() => import('../../layouts/StaffLayout'));
 const StaffBookingPage = lazy(() => import('../../pages/staff/StaffBookingPage'));
@@ -13,11 +13,11 @@ export const staffRoutes: RouteObject = {
   element: <ProtectedRoute allowedRoles={['staff']} />,
   children: [
     {
-      element: lazyRoute(StaffLayout),
+      element: <LazyRoute component={StaffLayout} />,
       children: [
-        { path: 'jobs', element: lazyRoute(StaffBookingPage) },
-        { path: 'bookings', element: lazyRoute(StaffCalendarPage) },
-        { path: 'profile', element: lazyRoute(StaffProfilePage) },
+        { path: 'jobs', element: <LazyRoute component={StaffBookingPage} /> },
+        { path: 'bookings', element: <LazyRoute component={StaffCalendarPage} /> },
+        { path: 'profile', element: <LazyRoute component={StaffProfilePage} /> },
         { index: true, element: <Navigate to="/staff/jobs" replace /> },
       ],
     },
