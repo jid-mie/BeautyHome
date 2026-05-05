@@ -53,7 +53,7 @@ Route::post('/admin/login', [AdminAuth::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
 
     // --- CUSTOMER ROUTES ---
-    Route::prefix('customer')->group(function () {
+    Route::prefix('customer')->middleware('abilities:customer')->group(function () {
         Route::get('/profile', [CustomerProfile::class, 'index']);
         Route::post('/profile/update', [CustomerProfile::class, 'update']);
         Route::post('/profile/avatar', [CustomerProfile::class, 'uploadAvatar']);
@@ -74,7 +74,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // --- STAFF ROUTES ---
-    Route::prefix('staff')->group(function () {
+    Route::prefix('staff')->middleware('abilities:staff')->group(function () {
         Route::get('/bookings', [StaffBooking::class, 'index']);
         Route::post('/bookings/{id}/update-status', [StaffBooking::class, 'updateStatus']);
         Route::get('/profile', [StaffProfile::class, 'index']);
@@ -84,7 +84,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // --- ADMIN ROUTES ---
-    Route::prefix('admin')->group(function () {
+    Route::prefix('admin')->middleware('abilities:admin')->group(function () {
         Route::get('/profile', [AdminAuth::class, 'profile']);
         Route::get('/dashboard', [AdminDashboard::class, 'index']);
         Route::get('/staff', [AdminStaff::class, 'index']);

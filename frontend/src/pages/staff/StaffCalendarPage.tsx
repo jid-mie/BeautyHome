@@ -1,158 +1,238 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
-  ChevronLeft, 
-  ChevronRight, 
   Clock, 
   User, 
   MapPin,
-  Calendar as CalendarIcon
+  Calendar as CalendarIcon,
+  Loader2,
+  CheckCircle2,
+  PlayCircle,
+  AlertCircle
 } from 'lucide-react';
-import { useStaffBookings } from '../../features/staff/hooks/useStaff';
+import { useStaffBookings, useUpdateBookingStatus } from '../../features/staff/hooks/useStaff';
+import { 
+  format, 
+  addDays, 
+  startOfToday, 
+  isSameDay, 
+  isValid,
+  parseISO,
+  eachDayOfInterval,
+  subDays
+} from 'date-fns';
+import { vi } from 'date-fns/locale';
+import { StaffBooking, StaffBookingStatus } from '../../features/staff/types';
+
+const safeDate = (dateStr?: string | null) => {
+  if (!dateStr) return null;
+  const date = parseISO(dateStr);
+  return isValid(date) ? date : null;
+};
+
+const safeTimeLabel = (time?: string | null) => time?.slice(0, 5) || '--:--';
+
+const getServiceName = (booking: StaffBooking) =>
+  booking.booking_details?.[0]?.service?.service_name || 'Dịch vụ Spa';
 
 const StaffCalendarPage: React.FC = () => {
   const { data: response, isLoading } = useStaffBookings();
-  const bookings = response?.data || [];
+  const bookings: StaffBooking[] = response?.data || [];
+  const updateStatus = useUpdateBookingStatus();
+  
+  const [selectedDate, setSelectedDate] = useState(startOfToday());
 
-  const [currentDate, setCurrentDate] = useState(new Date());
+  // Tạo danh sách 21 ngày (7 ngày trước, hôm nay, 13 ngày sau)
+  const dateRange = useMemo(() => {
+    return eachDayOfInterval({
+      start: subDays(startOfToday(), 3),
+      end: addDays(startOfToday(), 14)
+    });
+  }, []);
 
-  // Logic lịch
-  const daysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
-  const firstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
+  const filteredBookings = useMemo(() => {
+    return bookings
+      .filter((booking) => {
+        const bookingDate = safeDate(booking.booking_date);
+        return bookingDate ? isSameDay(bookingDate, selectedDate) : false;
+      })
+      .sort((a, b) => safeTimeLabel(a.booking_time).localeCompare(safeTimeLabel(b.booking_time)));
+  }, [bookings, selectedDate]);
 
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
+  const handleUpdateStatus = (id: number, currentStatus: StaffBookingStatus) => {
+    let nextStatus: StaffBookingStatus | null = null;
+    if (currentStatus === 'confirmed') nextStatus = 'in_progress';
+    else if (currentStatus === 'in_progress') nextStatus = 'completed';
 
-  const days = [];
-  const totalDays = daysInMonth(year, month);
-  const startDay = firstDayOfMonth(year, month);
-
-  // Padding cho các ngày trống của tháng trước
-  for (let i = 0; i < startDay; i++) {
-    days.push(null);
-  }
-
-  for (let d = 1; d <= totalDays; d++) {
-    days.push(d);
-  }
-
-  const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
-  const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
-
-  const monthNames = [
-    "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
-    "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
-  ];
-
-  const getBookingsForDay = (day: number) => {
-    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    return bookings.filter((b: any) => b.booking_date === dateStr);
+    if (nextStatus) {
+      updateStatus.mutate({ id, status: nextStatus });
+    }
   };
 
   return (
-    <div className="space-y-10">
+    <div className="p-4 md:p-8 space-y-8 bg-white min-h-screen">
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Lịch làm việc</h1>
-          <p className="text-slate-500 font-medium mt-1">Theo dõi lộ trình công việc của bạn theo thời gian.</p>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center">
+            <CalendarIcon size={28} className="mr-3 text-primary" />
+            Lịch làm việc
+          </h1>
+          <p className="text-slate-500 font-medium mt-1">Quản lý các ca hẹn theo khung giờ trong ngày.</p>
         </div>
-
-        <div className="flex items-center bg-white p-2 rounded-2xl shadow-sm border border-slate-100">
-          <button onClick={prevMonth} className="p-2 hover:bg-slate-50 rounded-xl transition-colors">
-            <ChevronLeft size={20} className="text-slate-600" />
-          </button>
-          <span className="px-6 font-bold text-slate-900 min-w-[140px] text-center">
-            {monthNames[month]} {year}
-          </span>
-          <button onClick={nextMonth} className="p-2 hover:bg-slate-50 rounded-xl transition-colors">
-            <ChevronRight size={20} className="text-slate-600" />
-          </button>
+        
+        <div className="bg-slate-50 p-1 rounded-2xl flex items-center border border-slate-100">
+           <div className="px-4 py-2 bg-white rounded-xl shadow-sm border border-slate-200/50 flex items-center space-x-2">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">Đang trực tuyến</span>
+           </div>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-7 gap-8">
-        {/* Calendar Grid */}
-        <div className="lg:col-span-5 bg-white rounded-[40px] p-8 shadow-sm border border-slate-100">
-          <div className="grid grid-cols-7 mb-8">
-            {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'].map(d => (
-              <div key={d} className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">{d}</div>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-7 gap-2">
-            {days.map((day, idx) => {
-              if (day === null) return <div key={`empty-${idx}`} className="aspect-square" />;
-              
-              const dayBookings = getBookingsForDay(day);
-              const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
-
-              return (
-                <div 
-                  key={day} 
-                  className={`aspect-square relative flex flex-col items-center justify-center rounded-3xl transition-all border group cursor-pointer ${
-                    isToday ? 'bg-primary border-primary shadow-lg shadow-primary/20' : 'bg-slate-50/50 border-transparent hover:bg-white hover:border-slate-200'
-                  }`}
-                >
-                  <span className={`text-lg font-bold ${isToday ? 'text-white' : 'text-slate-700'}`}>{day}</span>
-                  {dayBookings.length > 0 && (
-                    <div className="mt-1 flex space-x-1">
-                      {dayBookings.slice(0, 3).map((_: any, i: number) => (
-                        <div key={i} className={`w-1.5 h-1.5 rounded-full ${isToday ? 'bg-white/50' : 'bg-emerald-500'}`} />
-                      ))}
-                    </div>
-                  )}
-                  
-                  {/* Tooltip on hover */}
-                  {dayBookings.length > 0 && (
-                    <div className="absolute bottom-full mb-2 hidden group-hover:block z-20 w-48 bg-slate-900 text-white p-3 rounded-2xl text-[10px] shadow-2xl">
-                        <p className="font-bold mb-2">Lịch ngày {day}:</p>
-                        {dayBookings.map((b: any, i: number) => (
-                          <div key={i} className="mb-2 text-white/70 last:mb-0">
-                            <p>• {b.booking_time.substring(0,5)} - {b.booking_details?.[0]?.service?.service_name}</p>
-                            <p className="pl-3 text-[8px] text-emerald-400 opacity-80 flex items-center"><MapPin size={8} className="mr-1" /> {b.address || 'Tại spa'}</p>
-                          </div>
-                        ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Schedule Sidebar */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-[40px] p-8 shadow-sm border border-slate-100">
-            <h3 className="font-bold text-slate-900 mb-6 flex items-center">
-              <CalendarIcon size={18} className="mr-3 text-primary" />
-              Sắp tới
-            </h3>
+      {/* Horizontal Date Picker */}
+      <div className="relative group">
+        <div className="flex space-x-4 overflow-x-auto pb-6 pt-2 no-scrollbar scroll-smooth">
+          {dateRange.map((date, i) => {
+            const isSelected = isSameDay(date, selectedDate);
+            const isTodayDate = isSameDay(date, startOfToday());
             
-            <div className="space-y-6">
-              {bookings.filter((b: any) => b.status === 'confirmed' || b.status === 'in_progress').slice(0, 3).map((b: any) => (
-                <div key={b.booking_id} className="relative pl-6 border-l-2 border-emerald-500/20">
-                  <div className="absolute -left-[5px] top-0 w-2 h-2 rounded-full bg-emerald-500" />
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{b.booking_date}</p>
-                  <h4 className="font-bold text-slate-900 text-sm mb-2">{b.booking_details?.[0]?.service?.service_name}</h4>
-                  <div className="flex items-center text-xs text-slate-500">
-                    <Clock size={12} className="mr-2" />
-                    {b.booking_time.substring(0,5)}
-                  </div>
-                </div>
-              ))}
-              
-              {bookings.length === 0 && (
-                <p className="text-sm text-slate-400 text-center py-4 italic">Không có lịch sắp tới</p>
-              )}
-            </div>
-          </div>
-
-          <div className="bg-slate-900 rounded-[40px] p-8 text-white">
-            <h3 className="font-bold mb-4 text-emerald-400">Ghi chú</h3>
-            <p className="text-sm text-white/60 leading-relaxed font-light">
-              Luôn kiểm tra lịch trình vào buổi sáng để chuẩn bị vật tư chu đáo nhất cho khách hàng.
-            </p>
-          </div>
+            return (
+              <button
+                key={i}
+                onClick={() => setSelectedDate(date)}
+                className={`flex-shrink-0 w-20 py-6 rounded-[32px] flex flex-col items-center justify-center transition-all duration-300 ${
+                  isSelected 
+                    ? 'bg-slate-900 text-white shadow-xl shadow-slate-200 -translate-y-1' 
+                    : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
+                } ${isTodayDate && !isSelected ? 'ring-2 ring-primary ring-inset' : ''}`}
+              >
+                <span className="text-[10px] font-bold uppercase tracking-widest mb-2">
+                  {format(date, 'EEE', { locale: vi })}
+                </span>
+                <span className="text-2xl font-black">{format(date, 'd')}</span>
+                {isSelected && (
+                  <div className="mt-2 w-1.5 h-1.5 rounded-full bg-primary" />
+                )}
+              </button>
+            );
+          })}
         </div>
+        
+        {/* Shadow Indicators for scroll */}
+        <div className="absolute left-0 top-0 bottom-6 w-12 bg-gradient-to-r from-white to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute right-0 top-0 bottom-6 w-12 bg-gradient-to-l from-white to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" />
+      </div>
+
+      {/* Selected Date Summary */}
+      <div className="flex items-center justify-between border-b border-slate-50 pb-6">
+        <h2 className="text-2xl font-bold text-slate-800">
+          {isSameDay(selectedDate, startOfToday()) ? 'Hôm nay,' : ''} {format(selectedDate, 'dd MMMM, yyyy', { locale: vi })}
+        </h2>
+        <div className="flex items-center space-x-2 text-slate-400 font-bold text-sm">
+           <Clock size={16} />
+           <span>{filteredBookings.length} Ca hẹn</span>
+        </div>
+      </div>
+
+      {/* Timeline List */}
+      <div className="space-y-6 relative before:absolute before:left-8 md:before:left-12 before:top-4 before:bottom-4 before:w-[2px] before:bg-slate-50">
+        {isLoading ? (
+          <div className="py-20 flex justify-center w-full">
+            <Loader2 className="animate-spin text-primary" size={40} />
+          </div>
+        ) : filteredBookings.length > 0 ? (
+          filteredBookings.map((b) => (
+            <div key={b.booking_id} className="relative pl-20 md:pl-32 group">
+              {/* Timeline Time Indicator */}
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 flex flex-col items-center">
+                <div className={`w-4 h-4 rounded-full border-4 border-white shadow-sm z-10 transition-colors ${
+                   b.status === 'in_progress' ? 'bg-primary' : 
+                   b.status === 'completed' ? 'bg-emerald-500' : 'bg-slate-200'
+                }`} />
+                <span className="mt-2 text-sm font-black text-slate-900 bg-white px-2 py-1 rounded-lg shadow-sm border border-slate-100">
+                  {safeTimeLabel(b.booking_time)}
+                </span>
+              </div>
+
+              {/* Appointment Card */}
+              <div className={`bg-white rounded-[32px] border border-slate-100 p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center gap-6 transition-all duration-500 hover:shadow-2xl hover:shadow-slate-200/50 ${
+                b.status === 'in_progress' ? 'ring-2 ring-primary/20 bg-primary/[0.02]' : ''
+              }`}>
+                <div className="flex-1 space-y-4">
+                  <div className="flex items-center space-x-3">
+                    <span className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${
+                      b.status === 'in_progress' ? 'bg-blue-50 text-blue-600' :
+                      b.status === 'confirmed' ? 'bg-emerald-50 text-emerald-600' :
+                      b.status === 'completed' ? 'bg-slate-100 text-slate-400' :
+                      'bg-orange-50 text-orange-600'
+                    }`}>
+                      {b.status === 'confirmed' ? 'Đã xác nhận' : 
+                       b.status === 'in_progress' ? 'Đang thực hiện' : 
+                       b.status === 'completed' ? 'Hoàn thành' : 'Chờ xử lý'}
+                    </span>
+                    <span className="text-[10px] font-black text-slate-200">#{b.booking_id}</span>
+                  </div>
+                  
+                  <h3 className="text-xl font-bold text-slate-900 group-hover:text-primary transition-colors">
+                    {getServiceName(b)}
+                  </h3>
+
+                  <div className="flex flex-wrap gap-6">
+                    <div className="flex items-center text-slate-500 text-sm font-medium">
+                      <User size={16} className="mr-2 text-slate-300" />
+                      {b.customer?.full_name}
+                    </div>
+                    <div className="flex items-center text-slate-500 text-sm font-medium">
+                      <MapPin size={16} className="mr-2 text-slate-300" />
+                      <span className="truncate max-w-[200px]">{b.address || 'Tại Salon'}</span>
+                    </div>
+                  </div>
+                  
+                  {b.note && (
+                    <div className="bg-slate-50 p-4 rounded-2xl flex items-start space-x-3">
+                       <AlertCircle size={14} className="mt-0.5 text-slate-400 flex-shrink-0" />
+                       <p className="text-xs text-slate-500 italic">"{b.note}"</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="w-full md:w-auto">
+                  {['confirmed', 'in_progress'].includes(b.status) && (
+                    <button 
+                      disabled={updateStatus.isPending}
+                      onClick={() => handleUpdateStatus(b.booking_id, b.status)}
+                      className={`w-full md:w-56 py-4 rounded-2xl font-bold text-sm flex items-center justify-center transition-all ${
+                        b.status === 'in_progress' 
+                          ? 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-lg shadow-emerald-200' 
+                          : 'bg-slate-900 text-white hover:bg-primary shadow-lg shadow-slate-200'
+                      }`}
+                    >
+                      {updateStatus.isPending ? (
+                        <Loader2 size={18} className="animate-spin mr-2" />
+                      ) : b.status === 'in_progress' ? (
+                        <><CheckCircle2 size={18} className="mr-2" /> Hoàn thành</>
+                      ) : (
+                        <><PlayCircle size={18} className="mr-2" /> Bắt đầu</>
+                      )}
+                    </button>
+                  )}
+                  {b.status === 'completed' && (
+                    <div className="w-full md:w-56 py-4 rounded-2xl bg-slate-50 text-slate-400 font-bold text-sm flex items-center justify-center border border-slate-100">
+                      <CheckCircle2 size={18} className="mr-2" /> Đã xong
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="py-32 text-center bg-slate-50/50 rounded-[48px] border border-dashed border-slate-200">
+             <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
+                <Clock size={32} className="text-slate-200" />
+             </div>
+             <h3 className="text-xl font-bold text-slate-900 mb-2">Trống lịch</h3>
+             <p className="text-slate-400 font-medium px-8">Bạn không có ca hẹn nào vào ngày {format(selectedDate, 'dd/MM')}.</p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Log;
 
 class CategoryController extends Controller
 {
@@ -18,9 +19,14 @@ class CategoryController extends Controller
                 'data' => $categories
             ], Response::HTTP_OK);
         } catch (\Exception $e) {
+            Log::error('Admin API request failed.', [
+                'controller' => self::class,
+                'exception' => $e,
+            ]);
+
             return response()->json([
                 'status' => 'error',
-                'message' => $e->getMessage()
+                'message' => 'Không thể xử lý yêu cầu. Vui lòng thử lại sau.'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -40,9 +46,14 @@ class CategoryController extends Controller
                 'data' => $category
             ], Response::HTTP_CREATED);
         } catch (\Exception $e) {
+            Log::error('Admin API request failed.', [
+                'controller' => self::class,
+                'exception' => $e,
+            ]);
+
             return response()->json([
                 'status' => 'error',
-                'message' => $e->getMessage()
+                'message' => 'Không thể xử lý yêu cầu. Vui lòng thử lại sau.'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -63,9 +74,14 @@ class CategoryController extends Controller
                 'data' => $category
             ], Response::HTTP_OK);
         } catch (\Exception $e) {
+            Log::error('Admin API request failed.', [
+                'controller' => self::class,
+                'exception' => $e,
+            ]);
+
             return response()->json([
                 'status' => 'error',
-                'message' => $e->getMessage()
+                'message' => 'Không thể xử lý yêu cầu. Vui lòng thử lại sau.'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -80,9 +96,14 @@ class CategoryController extends Controller
                 'message' => 'Chuyên mục đã được xóa thành công'
             ], Response::HTTP_OK);
         } catch (\Exception $e) {
+            Log::error('Admin API request failed.', [
+                'controller' => self::class,
+                'exception' => $e,
+            ]);
+
             return response()->json([
                 'status' => 'error',
-                'message' => $e->getMessage()
+                'message' => 'Không thể xử lý yêu cầu. Vui lòng thử lại sau.'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

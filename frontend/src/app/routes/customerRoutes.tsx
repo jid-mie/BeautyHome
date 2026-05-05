@@ -1,34 +1,37 @@
+import { lazy } from 'react';
 import { RouteObject } from 'react-router-dom';
-import MainLayout from '../../layouts/MainLayout';
-import HomePage from '../../pages/customer/HomePage';
-import ServicesPage from '../../features/services/pages/ServicesPage';
-import ServiceDetailPage from '../../features/services/pages/ServiceDetailPage';
-import AccountLayout from '../../features/customer/layouts/AccountLayout';
-import ProfilePage from '../../features/customer/pages/ProfilePage';
-import MyBookingsPage from '../../features/customer/pages/MyBookingsPage';
-import NotificationsPage from '../../features/customer/pages/NotificationsPage';
-import SecurityPage from '../../features/customer/pages/SecurityPage';
 import ProtectedRoute from '../../shared/components/guards/ProtectedRoute';
+import { lazyRoute } from '../../shared/components/LazyRoute';
+
+const MainLayout = lazy(() => import('../../layouts/MainLayout'));
+const HomePage = lazy(() => import('../../pages/customer/HomePage'));
+const ServicesPage = lazy(() => import('../../features/services/pages/ServicesPage'));
+const ServiceDetailPage = lazy(() => import('../../features/services/pages/ServiceDetailPage'));
+const AccountLayout = lazy(() => import('../../features/customer/layouts/AccountLayout'));
+const ProfilePage = lazy(() => import('../../features/customer/pages/ProfilePage'));
+const MyBookingsPage = lazy(() => import('../../features/customer/pages/MyBookingsPage'));
+const NotificationsPage = lazy(() => import('../../features/customer/pages/NotificationsPage'));
+const SecurityPage = lazy(() => import('../../features/customer/pages/SecurityPage'));
 
 export const customerRoutes: RouteObject = {
   path: '/',
-  element: <MainLayout />,
+  element: lazyRoute(MainLayout),
   children: [
-    { index: true, element: <HomePage /> },
-    { path: 'services', element: <ServicesPage /> },
-    { path: 'services/:id', element: <ServiceDetailPage /> },
+    { index: true, element: lazyRoute(HomePage) },
+    { path: 'services', element: lazyRoute(ServicesPage) },
+    { path: 'services/:id', element: lazyRoute(ServiceDetailPage) },
     {
       element: <ProtectedRoute allowedRoles={['customer']} />,
       children: [
         {
           path: 'account',
-          element: <AccountLayout />,
+          element: lazyRoute(AccountLayout),
           children: [
-            { path: 'profile', element: <ProfilePage /> },
-            { path: 'bookings', element: <MyBookingsPage /> },
-            { path: 'notifications', element: <NotificationsPage /> },
-            { path: 'security', element: <SecurityPage /> },
-            { index: true, element: <ProfilePage /> },
+            { path: 'profile', element: lazyRoute(ProfilePage) },
+            { path: 'bookings', element: lazyRoute(MyBookingsPage) },
+            { path: 'notifications', element: lazyRoute(NotificationsPage) },
+            { path: 'security', element: lazyRoute(SecurityPage) },
+            { index: true, element: lazyRoute(ProfilePage) },
           ],
         },
       ],

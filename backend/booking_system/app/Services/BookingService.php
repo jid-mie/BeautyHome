@@ -49,7 +49,7 @@ class BookingService
                 'booking_time'  => $data['booking_time'],
                 'address'       => $data['address'],
                 'note'          => $data['note'] ?? null,
-                'status'        => 0 // 0 = pending
+                'status'        => Booking::STATUS_PENDING
             ]);
 
             foreach ($services as $srv) {
@@ -87,11 +87,11 @@ class BookingService
             throw new Exception('Bạn không có quyền hủy lịch này.');
         }
 
-        if ($booking->status != 0) {
+        if ($booking->status !== Booking::STATUS_PENDING) {
             throw new Exception('Chỉ có thể hủy lịch khi đang chờ xác nhận.');
         }
 
-        $booking->update(['status' => 4]); // 4 = Hủy
+        $booking->update(['status' => Booking::STATUS_CANCELLED]);
     }
 
     /**
@@ -111,7 +111,7 @@ class BookingService
 
         $booking->update([
             'staff_id' => $staffId,
-            'status'   => 1 // 1 = Đã xác nhận / Đã nhận
+            'status'   => Booking::STATUS_CONFIRMED
         ]);
     }
 
@@ -123,7 +123,7 @@ class BookingService
         $collision = Booking::where('staff_id', $staffId)
             ->where('booking_date', $date)
             ->where('booking_time', $time)
-            ->whereIn('status', [1, 2]) // Chỉ check các lịch đang active
+            ->whereIn('status', [Booking::STATUS_CONFIRMED, Booking::STATUS_IN_PROGRESS])
             ->exists();
             
         if ($collision) {

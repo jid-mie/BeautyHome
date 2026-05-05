@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 use App\Models\Staff;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
 
 class StaffController extends Controller
 {
@@ -22,9 +23,14 @@ class StaffController extends Controller
                 'data' => $staff
             ], Response::HTTP_OK);
         } catch (\Exception $e) {
+            Log::error('Admin API request failed.', [
+                'controller' => self::class,
+                'exception' => $e,
+            ]);
+
             return response()->json([
                 'status' => 'error',
-                'message' => $e->getMessage()
+                'message' => 'Không thể xử lý yêu cầu. Vui lòng thử lại sau.'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -58,9 +64,14 @@ class StaffController extends Controller
                 'data' => $staff
             ], Response::HTTP_CREATED);
         } catch (\Exception $e) {
+            Log::error('Admin API request failed.', [
+                'controller' => self::class,
+                'exception' => $e,
+            ]);
+
             return response()->json([
                 'status' => 'error',
-                'message' => $e->getMessage()
+                'message' => 'Không thể xử lý yêu cầu. Vui lòng thử lại sau.'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -110,9 +121,14 @@ class StaffController extends Controller
                 'data' => $staff
             ], Response::HTTP_OK);
         } catch (\Exception $e) {
+            Log::error('Admin API request failed.', [
+                'controller' => self::class,
+                'exception' => $e,
+            ]);
+
             return response()->json([
                 'status' => 'error',
-                'message' => $e->getMessage()
+                'message' => 'Không thể xử lý yêu cầu. Vui lòng thử lại sau.'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -130,9 +146,14 @@ class StaffController extends Controller
                 'message' => 'Nhân viên đã được xóa khỏi hệ thống'
             ], Response::HTTP_OK);
         } catch (\Exception $e) {
+            Log::error('Admin API request failed.', [
+                'controller' => self::class,
+                'exception' => $e,
+            ]);
+
             return response()->json([
                 'status' => 'error',
-                'message' => $e->getMessage()
+                'message' => 'Không thể xử lý yêu cầu. Vui lòng thử lại sau.'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

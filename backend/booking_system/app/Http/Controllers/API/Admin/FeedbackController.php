@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Feedback;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Log;
 
 class FeedbackController extends Controller
 {
@@ -18,9 +19,14 @@ class FeedbackController extends Controller
                 'data' => $feedback
             ], Response::HTTP_OK);
         } catch (\Exception $e) {
+            Log::error('Admin API request failed.', [
+                'controller' => self::class,
+                'exception' => $e,
+            ]);
+
             return response()->json([
                 'status' => 'error',
-                'message' => $e->getMessage()
+                'message' => 'Không thể xử lý yêu cầu. Vui lòng thử lại sau.'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
