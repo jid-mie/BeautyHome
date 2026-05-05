@@ -8,13 +8,13 @@ use App\Models\BookingDetail;
 use App\Models\Service;
 use App\Models\Notification;
 use Carbon\Carbon;
-use Exception;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 
 class CreateBookingHandler
 {
     /**
-     * @throws Exception
+     * @throws InvalidArgumentException
      */
     public function handle(CreateBookingCommand $command): Booking
     {
@@ -23,17 +23,17 @@ class CreateBookingHandler
         $cart = $command->cart;
 
         if (empty($cart)) {
-            throw new Exception('Giỏ hàng trống, không thể đặt lịch.');
+            throw new InvalidArgumentException('Giỏ hàng trống, không thể đặt lịch.');
         }
 
         $bookingDateTime = Carbon::parse($data['booking_date'] . ' ' . $data['booking_time']);
         if ($bookingDateTime->isPast()) {
-            throw new Exception('Thời gian đặt lịch không hợp lệ (không được trong quá khứ).');
+            throw new InvalidArgumentException('Thời gian đặt lịch không hợp lệ (không được trong quá khứ).');
         }
 
         $services = Service::whereIn('service_id', $cart)->get();
         if ($services->isEmpty()) {
-            throw new Exception('Dịch vụ không tồn tại.');
+            throw new InvalidArgumentException('Dịch vụ không tồn tại.');
         }
 
         $totalAmount = $services->sum('price');
@@ -46,7 +46,7 @@ class CreateBookingHandler
                 'booking_time'  => $data['booking_time'],
                 'address'       => $data['address'],
                 'note'          => $data['note'] ?? null,
-                'status'        => 0 // 0 = pending
+                'status'        => Booking::STATUS_PENDING
             ]);
 
             foreach ($services as $srv) {

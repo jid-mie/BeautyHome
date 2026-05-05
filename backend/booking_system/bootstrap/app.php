@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         'admin_auth' => \App\Http\Middleware\AdminAuth::class,
         'customer_auth' => \App\Http\Middleware\CustomerAuth::class,
         'staff_auth' => \App\Http\Middleware\StaffAuth::class,
+        'abilities' => \Laravel\Sanctum\Http\Middleware\CheckAbilities::class,
     ]);
 })
     ->withExceptions(function (Exceptions $exceptions): void {

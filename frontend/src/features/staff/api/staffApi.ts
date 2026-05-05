@@ -1,12 +1,13 @@
 import apiClient from '../../../services/apiClient';
+import { StaffBookingStatus, StaffBookingsResponse } from '../types';
 
 export const staffApi = {
-  getMyBookings: async () => {
-    const response = await apiClient.get('/staff/bookings');
+  getMyBookings: async (): Promise<StaffBookingsResponse> => {
+    const response = await apiClient.get<StaffBookingsResponse>('/staff/bookings');
     return response.data;
   },
 
-  updateBookingStatus: async (id: number, status: string) => {
+  updateBookingStatus: async (id: number, status: StaffBookingStatus) => {
     const response = await apiClient.post(`/staff/bookings/${id}/update-status`, { status });
     return response.data;
   },

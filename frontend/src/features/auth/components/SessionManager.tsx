@@ -20,7 +20,6 @@ const SessionManager: React.FC = () => {
   const fetchSessions = async () => {
     try {
       const response = await authApi.getSessions();
-      console.log('Fetched sessions:', response.data);
       if (response.success) {
         setSessions(response.data);
       }
@@ -38,11 +37,9 @@ const SessionManager: React.FC = () => {
   const handleRevoke = async (id: number) => {
     if (!window.confirm('Bạn có chắc chắn muốn đăng xuất khỏi thiết bị này?')) return;
     
-    console.log('Revoking session ID:', id);
     setRevokingId(id);
     try {
-      const response = await authApi.revokeSession(id);
-      console.log('Revoke response:', response);
+      await authApi.revokeSession(id);
       setSessions(prev => prev.filter(s => s.id !== id));
     } catch (error) {
       console.error('Failed to revoke session:', error);

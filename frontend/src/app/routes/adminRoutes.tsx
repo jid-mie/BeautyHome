@@ -1,35 +1,38 @@
+import { lazy } from 'react';
 import { RouteObject, Navigate } from 'react-router-dom';
-import AdminLayout from '../../layouts/AdminLayout';
-import AdminDashboardPage from '../../pages/admin/AdminDashboardPage';
-import AdminServicePage from '../../pages/admin/AdminServicePage';
-import AdminBookingPage from '../../pages/admin/AdminBookingPage';
-import AdminStaffPage from '../../pages/admin/AdminStaffPage';
-import AdminCategoryPage from '../../pages/admin/AdminCategoryPage';
-import AdminCustomerPage from '../../pages/admin/AdminCustomerPage';
-import AdminPaymentPage from '../../pages/admin/AdminPaymentPage';
-import AdminLoginPage from '../../features/auth/pages/AdminLoginPage';
 import ProtectedRoute from '../../shared/components/guards/ProtectedRoute';
+import { lazyRoute } from '../../shared/components/LazyRoute';
+
+const AdminLayout = lazy(() => import('../../layouts/AdminLayout'));
+const AdminDashboardPage = lazy(() => import('../../pages/admin/AdminDashboardPage'));
+const AdminServicePage = lazy(() => import('../../pages/admin/AdminServicePage'));
+const AdminBookingPage = lazy(() => import('../../pages/admin/AdminBookingPage'));
+const AdminStaffPage = lazy(() => import('../../pages/admin/AdminStaffPage'));
+const AdminCategoryPage = lazy(() => import('../../pages/admin/AdminCategoryPage'));
+const AdminCustomerPage = lazy(() => import('../../pages/admin/AdminCustomerPage'));
+const AdminPaymentPage = lazy(() => import('../../pages/admin/AdminPaymentPage'));
+const AdminLoginPage = lazy(() => import('../../features/auth/pages/AdminLoginPage'));
 
 export const adminRoutes: RouteObject = {
   path: '/admin',
   children: [
     {
       path: 'login',
-      element: <AdminLoginPage />,
+      element: lazyRoute(AdminLoginPage),
     },
     {
       element: <ProtectedRoute allowedRoles={['admin']} />,
       children: [
         {
-          element: <AdminLayout />,
+          element: lazyRoute(AdminLayout),
           children: [
-            { path: 'dashboard', element: <AdminDashboardPage /> },
-            { path: 'services', element: <AdminServicePage /> },
-            { path: 'bookings', element: <AdminBookingPage /> },
-            { path: 'staff', element: <AdminStaffPage /> },
-            { path: 'categories', element: <AdminCategoryPage /> },
-            { path: 'customers', element: <AdminCustomerPage /> },
-            { path: 'payments', element: <AdminPaymentPage /> },
+            { path: 'dashboard', element: lazyRoute(AdminDashboardPage) },
+            { path: 'services', element: lazyRoute(AdminServicePage) },
+            { path: 'bookings', element: lazyRoute(AdminBookingPage) },
+            { path: 'staff', element: lazyRoute(AdminStaffPage) },
+            { path: 'categories', element: lazyRoute(AdminCategoryPage) },
+            { path: 'customers', element: lazyRoute(AdminCustomerPage) },
+            { path: 'payments', element: lazyRoute(AdminPaymentPage) },
             { index: true, element: <Navigate to="/admin/dashboard" replace /> },
           ],
         },

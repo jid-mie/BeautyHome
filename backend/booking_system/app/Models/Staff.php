@@ -28,6 +28,7 @@ class Staff extends Authenticatable
 
     protected $hidden = [
         'password',
+        'remember_token',
     ];
 
     protected $appends = ['role', 'id'];

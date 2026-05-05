@@ -41,16 +41,28 @@ class Booking extends Model
         return $this->hasOne(\App\Models\Feedback::class, 'booking_id', 'booking_id');
     }
 
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_CONFIRMED = 'confirmed';
+    public const STATUS_IN_PROGRESS = 'in_progress';
+    public const STATUS_COMPLETED = 'completed';
+    public const STATUS_CANCELLED = 'cancelled';
+
+    private const LEGACY_STATUS_MAP = [
+        '0' => self::STATUS_PENDING,
+        '1' => self::STATUS_CONFIRMED,
+        '2' => self::STATUS_IN_PROGRESS,
+        '3' => self::STATUS_COMPLETED,
+        '4' => self::STATUS_CANCELLED,
+    ];
+
     public function getStatusAttribute($value)
     {
-        $map = [
-            '0' => 'pending',
-            '1' => 'confirmed',
-            '2' => 'in_progress',
-            '3' => 'completed',
-            '4' => 'cancelled'
-        ];
-        return $map[$value] ?? $value;
+        return self::LEGACY_STATUS_MAP[(string) $value] ?? $value;
+    }
+
+    public function setStatusAttribute($value): void
+    {
+        $this->attributes['status'] = self::LEGACY_STATUS_MAP[(string) $value] ?? $value;
     }
 
     public function payment()

@@ -36,7 +36,7 @@ class AuthController extends Controller
         ]);
 
         $deviceName = $request->header('User-Agent') ?: 'Unknown Device';
-        $token = $customer->createToken($deviceName)->plainTextToken;
+        $token = $customer->createToken($deviceName, ['customer'])->plainTextToken;
 
         return response()->json([
             'success' => true,

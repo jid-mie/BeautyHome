@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 use App\Models\Booking;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Log;
 
 class BookingController extends Controller
 {
@@ -25,9 +26,14 @@ class BookingController extends Controller
                 'data' => $bookings
             ], Response::HTTP_OK);
         } catch (\Exception $e) {
+            Log::error('Admin API request failed.', [
+                'controller' => self::class,
+                'exception' => $e,
+            ]);
+
             return response()->json([
                 'status' => 'error',
-                'message' => $e->getMessage()
+                'message' => 'Không thể xử lý yêu cầu. Vui lòng thử lại sau.'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -62,8 +68,8 @@ class BookingController extends Controller
 
         try {
             // Tự động chuyển trạng thái thành 'confirmed' khi gán nhân viên
-            if (isset($validated['staff_id']) && $booking->status === 'pending') {
-                $validated['status'] = 'confirmed';
+            if (isset($validated['staff_id']) && $booking->status === Booking::STATUS_PENDING) {
+                $validated['status'] = Booking::STATUS_CONFIRMED;
             }
             
             $booking->update($validated);
@@ -74,9 +80,14 @@ class BookingController extends Controller
                 'data' => $booking->load(['customer', 'staff'])
             ], Response::HTTP_OK);
         } catch (\Exception $e) {
+            Log::error('Admin API request failed.', [
+                'controller' => self::class,
+                'exception' => $e,
+            ]);
+
             return response()->json([
                 'status' => 'error',
-                'message' => $e->getMessage()
+                'message' => 'Không thể xử lý yêu cầu. Vui lòng thử lại sau.'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

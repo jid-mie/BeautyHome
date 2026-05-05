@@ -48,7 +48,7 @@ class BookingController extends Controller
 
         $booking->update([
             'staff_id' => $request->staff_id,
-            'status' => $booking->status == 0 ? 1 : $booking->status // Đổi thành Đã xác nhận nếu đang Chờ xác nhận
+            'status' => $booking->status === Booking::STATUS_PENDING ? Booking::STATUS_CONFIRMED : $booking->status
         ]);
 
         return redirect()->back()->with('success', 'Phân công nhân viên thành công!');
@@ -57,12 +57,12 @@ class BookingController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
-        'status' => 'required|integer|min:0|max:4'
+        'status' => 'required|string|in:pending,confirmed,in_progress,completed,cancelled'
         ]);
 
         $booking = Booking::findOrFail($id);
         $booking->update([
-        'status' => (int)$request->status
+        'status' => $request->status
         ]);
 
         return redirect()->back()->with('success', 'Cập nhật trạng thái thành công!');
